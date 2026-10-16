@@ -18,7 +18,7 @@ npm run generate-icons
 npm run dev
 ```
 
-`npm install` creates the local `package-lock.json`. The repository intentionally does not include a lock file or generated binary PNG icons. After the install and icon-generation commands succeed, commit `package-lock.json` and `public/icons/icon-192.png`, `public/icons/icon-512.png`, and `public/icons/icon-maskable-512.png` before expecting GitHub Actions to pass.
+`npm install` installs dependencies and creates a local `package-lock.json`. The GitHub Actions workflow uses `npm install` so the first deployment can run even before a lock file exists. The workflow generates the three PNG icons automatically during deployment; you do not need to commit those generated binaries.
 
 ## Build and preview
 
@@ -37,10 +37,9 @@ The source icon is `public/icons/icon.svg`. Run `npm run generate-icons` to crea
 
 1. Run `npm install` and `npm run generate-icons`.
 2. Run `npm run build` and `npm run preview` to check the production build locally.
-3. Commit `package-lock.json` and the three generated PNG icons.
-4. Push your changes to `main`.
-5. In GitHub, open **Settings → Pages → Build and deployment → Source** and select **GitHub Actions**.
-6. Open the **Actions** tab and wait for the build and deploy jobs to succeed.
+3. Push your changes to `main`.
+4. In GitHub, open **Settings → Pages → Build and deployment → Source** and select **GitHub Actions**.
+5. Open the **Actions** tab and wait for the build and deploy jobs to succeed.
 
 Live URL: https://addulasaikiran-ops.github.io/Videogameeee/
 
