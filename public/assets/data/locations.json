@@ -1,0 +1,24 @@
+{
+  "locations": [
+    {
+      "id": "beach",
+      "label": "Beach",
+      "description": "The starting area."
+    },
+    {
+      "id": "town",
+      "label": "Town",
+      "description": "A simple placeholder town."
+    },
+    {
+      "id": "cinema",
+      "label": "Cinema",
+      "description": "A simple placeholder cinema."
+    },
+    {
+      "id": "secret",
+      "label": "Secret",
+      "description": "A simple placeholder secret area."
+    }
+  ]
+}
