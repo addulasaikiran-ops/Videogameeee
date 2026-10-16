@@ -47,10 +47,10 @@ Live URL: https://addulasaikiran-ops.github.io/Videogameeee/
 ## Assets and simplified features
 
 - `public/assets/photos/placeholder-beach.svg` is an illustrative placeholder, not a personal photo.
-- `public/assets/audio/`, `models/`, and `textures/` contain README notes only. Add your own media files to enable those features.
-- `src/audio/AudioManager.js` expects `assets/audio/music/beach.mp3`; without that file, music will not play.
+- `public/assets/audio/`, `models/`, and `textures/` contain README notes only. Add your own media files to those directories.
+- Music is disabled by default to avoid requesting a nonexistent audio file. After adding `public/assets/audio/music/beach.mp3`, set `this.musicEnabled = true` in `src/audio/AudioManager.js`.
 - Runtime URLs for files in `public/` should use `assetUrl()` from `src/core/assetUrl.js`.
-- The world scenes are simple Three.js primitives, not imported 3D models.
+- The world scenes are simple Three.js primitives, not imported 3D models; town/cinema/secret are starter scenes.
 - There is no password gate, access control, or encryption.
 
 Do not commit `node_modules/`, `dist/`, or `.env` files.
