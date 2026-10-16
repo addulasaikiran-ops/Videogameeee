@@ -1,0 +1,1 @@
+export const LOCATIONS = { beach: { ground: '#eacb9e', sky: '#f6c7a5' }, town: { ground: '#c7d2b0', sky: '#c8e0df' }, cinema: { ground: '#39334f', sky: '#28243c' }, secret: { ground: '#9bb9a0', sky: '#b8d5c0' } };
