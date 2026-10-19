@@ -13,7 +13,12 @@ export class CameraController {
     this.bounds = { minX: -8, maxX: 40 };
     this.override = null; // {x,y,dist}
     this.pos = new THREE.Vector3(0, this.height, this.distance);
+    this.trauma = 0;  // 0..1 screen-shake energy, decays quadratically
+    this.kick = 0;    // landing dip
   }
+
+  shake(amount = 0.5) { this.trauma = Math.min(1, Math.max(this.trauma, amount)); }
+  dip(amount = 0.45) { this.kick = Math.min(1, this.kick + amount); }
 
   snap(x, y) {
     this.pos.set(x + this.lookAhead, y + this.height, this.distance);
@@ -36,7 +41,13 @@ export class CameraController {
     this.pos.x += (tx - this.pos.x) * k;
     this.pos.y += (ty + this.height - 1.6 - this.pos.y) * k;
     this.pos.z += (dist - this.pos.z) * k;
-    this.camera.position.copy(this.pos);
-    this.camera.lookAt(this.pos.x + 0.6, this.pos.y - 1.1, 0);
+    // trauma shake + landing dip — applied as a render offset, pos stays clean
+    const s = this.trauma * this.trauma;
+    const ox = s > 0.0001 ? (Math.random() * 2 - 1) * s * 0.5 : 0;
+    const oy = (s > 0.0001 ? (Math.random() * 2 - 1) * s * 0.32 : 0) - this.kick * 0.4;
+    this.camera.position.set(this.pos.x + ox, this.pos.y + oy, this.pos.z);
+    this.camera.lookAt(this.pos.x + ox * 0.5 + 0.6, this.pos.y + oy * 0.5 - 1.1, 0);
+    this.trauma = Math.max(0, this.trauma - dt * 1.8);
+    this.kick = Math.max(0, this.kick - dt * 4);
   }
 }

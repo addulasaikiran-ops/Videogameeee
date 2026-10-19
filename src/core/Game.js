@@ -180,6 +180,7 @@ export class Game {
     this.ui.setHp(this.player.hp, this.player.maxHp);
     this.ui.showToast(level.data.name, 2600);
     this.audio.unlock();
+    this.audio.setMood(id);
 
     if (level.data.introScene && !this.save.flag(`intro:${id}`)) {
       this.save.setFlag(`intro:${id}`);
@@ -269,13 +270,21 @@ export class Game {
     }, 900);
   }
 
+  _reducedMotion() {
+    return !!(this.save.data.settings.reducedMotion || window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
+  }
+
   _onPlayerEvent(name) {
     this.audio.play(name);
+    if (name === 'land' && !this._reducedMotion()) this.cam.dip(0.4);
+    if ((name === 'hurt' || name === 'land') && navigator.vibrate) navigator.vibrate(name === 'hurt' ? 40 : 8);
     if (name === 'hurt') {
       this.ui.setHp(this.player.hp, this.player.maxHp);
+      this.ui.hurtFlash();
+      if (!this._reducedMotion()) this.cam.shake(0.55);
       this.bursts.burst(this.player.position.x, this.player.position.y + 0.8, { color: '#ff6d6d', count: 8 });
     }
-    if (name === 'death') this._gameOver();
+    if (name === 'death') { this._gameOver(); if (!this._reducedMotion()) this.cam.shake(0.7); }
     if (name === 'attack') this.bursts.burst(this.player.position.x + this.player.facing, this.player.position.y + 0.7, { color: '#ff9ec4', count: 6, speed: 2.5, life: 0.4 });
     if (name === 'doubleJump') this.bursts.burst(this.player.position.x, this.player.position.y, { color: '#cfe9ff', count: 8, speed: 2, life: 0.4 });
     if (name === 'jump') this.bursts.burst(this.player.position.x, this.player.position.y, { color: '#fff0d6', count: 4, speed: 1.6, life: 0.3 });
@@ -343,6 +352,11 @@ export class Game {
   }
 
   _updatePlaying(dt, t) {
+    // hit-stop: briefly slow gameplay on impactful kills (skip with reduced motion)
+    if (this.hitStop > 0) {
+      this.hitStop -= dt;
+      if (!this._reducedMotion()) dt = dt * 0.12;
+    }
     const L = this.level;
     const p = this.player;
     const effInput = {
@@ -364,7 +378,13 @@ export class Game {
       if (c.collected || !aabbOverlap(pa.minX, pa.bottomY, p.width, p.height, c.aabb)) continue;
       c.collect();
       this.save.collect(L.id, c.id, c.type === 'heart');
-      if (c.type === 'heart') { this.runHearts++; this.audio.play('collect'); this.bursts.burst(c.mesh.position.x, c.mesh.position.y, { color: '#ff8fb8' }); }
+      if (c.type === 'heart') {
+        this.runHearts++;
+        const now = performance.now();
+        this._streak = (this._streak && now - this._streak.t < 1600) ? { n: this._streak.n + 1, t: now } : { n: 0, t: now };
+        this.audio.play('collect', { step: this._streak.n });
+        this.bursts.burst(c.mesh.position.x, c.mesh.position.y, { color: '#ff8fb8' });
+      }
       else if (c.type === 'fragment') { this.audio.play('fragment'); this.bursts.burst(c.mesh.position.x, c.mesh.position.y, { color: '#8fd8ff' }); this._collectFragment(c); }
       else { this.audio.play('star'); this.bursts.burst(c.mesh.position.x, c.mesh.position.y, { color: '#ffe27a' }); this.ui.showToast('A hidden keepsake ★'); }
       this._updateHudCounts();
@@ -395,6 +415,7 @@ export class Game {
       if (attackBox && aabbOverlap(attackBox.minX, attackBox.bottomY, attackBox.maxX - attackBox.minX, attackBox.topY - attackBox.bottomY, e.aabb)) {
         const res = e.hit(1);
         this.audio.play(res === 'dead' ? 'enemyDie' : 'enemyHit');
+        if (res === 'dead') this.hitStop = 0.06;
         this.bursts.burst(e.x, e.y + 0.5, { color: '#c9b6ff', count: 10 });
         if (res === 'dead' && e.isSummon) L.boss?.wispDied();
         continue;
@@ -415,6 +436,8 @@ export class Game {
           if (aabbOverlap(aa.minX, aa.bottomY, aa.maxX - aa.minX, aa.topY - aa.bottomY, b.aabb)) {
             const res = b.hit(1);
             this.audio.play(res === 'dead' ? 'enemyDie' : 'bossHit');
+            this.hitStop = 0.09;
+            if (!this._reducedMotion()) this.cam.shake(0.35);
             this.bursts.burst(b.x, b.y + 1.2, { color: '#ff8fb8', count: 14, speed: 4 });
             if (res === 'dead') this._bossDefeated();
           }

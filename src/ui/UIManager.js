@@ -12,6 +12,10 @@ export class UIManager {
     ui.save = save;
     ui.bridge = this;
     this._inGame = false;
+    const s = save?.data?.settings || {};
+    document.body.classList.toggle('a11y-lg-text', s.textSize === 'large');
+    document.body.classList.toggle('a11y-rm', !!s.reducedMotion);
+    document.body.classList.toggle('a11y-hc', !!s.highContrast);
     window.addEventListener('resize', () => this.updateOrientationHint());
     window.addEventListener('offline', () => uiSet({ offline: true }));
     window.addEventListener('online', () => uiSet({ offline: false }));
@@ -51,6 +55,7 @@ export class UIManager {
     setTimeout(() => { if (uiGet().toast?.id === id) uiSet({ toast: null }); }, ms);
   }
   setInteract(visible) { uiSet({ interact: visible }); }
+  hurtFlash() { uiSet({ vignette: (uiGet().vignette || 0) + 1 }); }
   setBoss(frac) { uiSet({ boss: frac == null ? null : Math.max(0, frac) }); }
 
   // ── dialogue ──

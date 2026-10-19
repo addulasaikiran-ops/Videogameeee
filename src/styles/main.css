@@ -291,6 +291,11 @@ button.level-btn {
   font-size: .75rem; font-weight: 700; padding: .35rem .9rem; border-radius: var(--r-pill) }
 .big-heart.broken { color: var(--c-lav-soft); font-size: 3rem }
 
+.vignette { position: fixed; inset: 0; pointer-events: none; z-index: 9;
+  background: radial-gradient(120% 100% at 50% 50%, transparent 52%, rgba(190, 35, 70, .5));
+  animation: vign .7s var(--ez-out) forwards }
+@keyframes vign { from { opacity: 1 } to { opacity: 0 } }
+
 /* accessibility toggles (set from the Settings → Accessibility tab) */
 body.a11y-lg-text { font-size: 112% } body.a11y-lg-text .dlg-box p { font-size: 1.35rem }
 body.a11y-rm *, body.a11y-rm *::before, body.a11y-rm *::after { animation: none !important; transition: none !important }

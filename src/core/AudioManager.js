@@ -6,6 +6,17 @@ import { assetUrl } from './assetUrl.js';
 
 const MusicTrack = null; // e.g. 'assets/audio/music/theme.mp3' when you add one
 
+// Per-chapter ambient pads (Hz): each level's mood retunes the four drones.
+const MOODS = {
+  firstLight:     [196.0, 246.94, 293.66, 392.0],   // Gmaj7 — dawn garden
+  gardenMemories: [220.0, 277.18, 329.63, 440.0],   // A add9 — warm memories
+  memoryChapter:  [174.61, 220.0, 261.63, 349.23],  // F add4 — soft flashback
+  seaDistance:    [146.83, 220.0, 293.66, 369.99],  // D lydian — open sea
+  shadowDoubt:    [130.81, 155.56, 196.0, 233.08],  // Cm7 — doubt
+  heartsPromise:  [110.0, 138.59, 164.81, 220.0],   // A minor — resolve
+  endingGlade:    [196.0, 246.94, 329.63, 392.0],   // G6 — together
+};
+
 export class AudioManager {
   constructor(settings) {
     this.settings = settings; // { music, sfx, muted } — live ref to save.settings
@@ -56,7 +67,7 @@ export class AudioManager {
   // and license-free ambience instead of shipping a music file.
   _startAmbient() {
     if (!this.ctx || this.ambientNodes.length) return;
-    const notes = [196.0, 246.94, 293.66, 392.0]; // G3 B3 D4 G4 — soft major7-ish wash
+    const notes = MOODS[this._mood] || MOODS.firstLight;
     for (const [i, freq] of notes.entries()) {
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
@@ -71,6 +82,16 @@ export class AudioManager {
       osc.connect(gain); gain.connect(this.musicGain);
       osc.start(); lfo.start();
       this.ambientNodes.push(osc, lfo);
+    }
+  }
+
+  // Retune the drone chord per chapter — a slow glide, not a jump cut.
+  setMood(levelId) {
+    this._mood = levelId;
+    const notes = MOODS[levelId];
+    if (!this.ctx || !notes || !this.ambientNodes.length) return;
+    for (const [i, f] of notes.entries()) {
+      this.ambientNodes[i * 2]?.frequency.setTargetAtTime(f, this.ctx.currentTime, 0.9);
     }
   }
 
@@ -89,13 +110,13 @@ export class AudioManager {
     osc.start(t0); osc.stop(t0 + dur + 0.05);
   }
 
-  play(name) {
+  play(name, opt) {
     if (!this.ctx || this.settings.muted) return;
     const s = {
       jump:      () => this._tone({ freq: 300, freq2: 520, type: 'triangle', dur: 0.14, vol: 0.2 }),
       doubleJump:() => this._tone({ freq: 400, freq2: 700, type: 'triangle', dur: 0.14, vol: 0.2 }),
       land:      () => this._tone({ freq: 160, freq2: 90, type: 'sine', dur: 0.1, vol: 0.16 }),
-      collect:   () => { this._tone({ freq: 660, dur: 0.1, vol: 0.2 }); this._tone({ freq: 990, dur: 0.14, vol: 0.18, delay: 0.07 }); },
+      collect:   () => { const st = Math.min(8, opt?.step || 0); const f = 660 * (1 + st * 0.07); this._tone({ freq: f, dur: 0.1, vol: 0.2 }); this._tone({ freq: f * 1.5, dur: 0.14, vol: 0.18, delay: 0.07 }); },
       fragment:  () => { [523, 659, 784, 1047].forEach((f, i) => this._tone({ freq: f, dur: 0.22, vol: 0.16, delay: i * 0.09 })); },
       star:      () => { [880, 1175, 1568].forEach((f, i) => this._tone({ freq: f, dur: 0.16, vol: 0.15, delay: i * 0.07 })); },
       hurt:      () => this._tone({ freq: 220, freq2: 90, type: 'sawtooth', dur: 0.25, vol: 0.2 }),
