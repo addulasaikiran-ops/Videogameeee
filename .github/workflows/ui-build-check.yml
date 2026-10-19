@@ -1,0 +1,35 @@
+name: UI build check
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [ui/romantic-storybook-polish]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install dependencies
+        run: npm install
+      - name: Generate app icons
+        run: npm run generate-icons
+      - name: Build production site
+        run: npm run build
+      - name: Verify production assets
+        run: |
+          test -f dist/index.html
+          test -f dist/manifest.webmanifest
+          test -f dist/sw.js
+          test -f dist/asset-manifest.json
+          test -f dist/icons/icon-192.png
+          test -f dist/icons/icon-512.png

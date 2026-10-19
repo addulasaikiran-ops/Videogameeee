@@ -10,6 +10,7 @@ function el(tag, cls, html) {
 }
 function button(label, onClick, cls = '') {
   const b = el('button', cls, label);
+  b.type = 'button';
   b.addEventListener('click', (e) => { e.preventDefault(); onClick(); });
   return b;
 }
@@ -24,14 +25,14 @@ export class UIManager {
 
   _build() {
     // ── Loading ──
-    this.loading = el('div', 'screen', `<div class="heart-pulse"></div><p class="dim">loading a little world…</p>`);
+    this.loading = el('div', 'screen loading-screen', `<div class="panel loading-panel" role="status" aria-live="polite"><div class="heart-pulse" aria-hidden="true"></div><p class="tagline">A LITTLE WORLD, JUST FOR YOU</p><p class="dim">gathering the stars…</p></div>`);
     // ── Main menu ──
-    this.menu = el('div', 'screen hidden');
+    this.menu = el('div', 'screen hidden menu-screen');
     this.menuPanel = el('div', 'panel menu-panel');
     this.menu.append(this.menuPanel);
     // ── Level select ──
     this.levels = el('div', 'screen hidden');
-    this.levels.append(el('div', 'panel', `<h2>Chapters</h2><div class="level-list" data-level-list></div><div class="row"><button data-back>Back</button></div>`));
+    this.levels.append(el('div', 'panel screen-panel', `<p class="eyebrow">YOUR JOURNEY</p><h2>Story chapters</h2><p class="screen-intro">Every little step brings you closer.</p><div class="level-list" data-level-list aria-label="Unlocked story chapters"></div><div class="row"><button data-back>Back to menu</button></div>`));
     // ── Settings ──
     this.settings = el('div', 'screen hidden');
     this.settings.append(el('div', 'panel', `
@@ -46,33 +47,38 @@ export class UIManager {
       <div class="row"><button data-back>Back</button></div>`));
     // ── Credits ──
     this.credits = el('div', 'screen hidden');
-    this.credits.append(el('div', 'panel credits', `<h2>Credits</h2><p>${CREDITS.join('<br>')}</p><div class="row"><button data-back>Back</button></div>`));
+    this.credits.append(el('div', 'panel credits screen-panel', `<p class="eyebrow">MADE WITH HEART</p><h2>Credits</h2><p>${CREDITS.join('<br>')}</p><div class="row"><button data-back>Back to menu</button></div>`));
     // ── HUD ──
     this.hud = el('div', 'hud hidden');
     this.hud.innerHTML = `
-      <div class="hud-left">
-        <span class="chip" data-hearts>♥ 0</span>
-        <span class="chip frag" data-frags>◆ 0</span>
-        <span class="chip" data-hp></span>
+      <div class="hud-left" aria-label="Game status">
+        <span class="chip collectible-chip" data-hearts aria-label="Collected hearts">♥ 0</span>
+        <span class="chip frag" data-frags aria-label="Memory fragments">◆ 0</span>
+        <span class="chip hp-chip" data-hp aria-label="Health"></span>
       </div>
-      <div class="boss-bar hidden" data-bosswrap><span class="boss-name">Doubtwarden</span><div class="bar"><div class="fill" data-bossfill></div></div></div>`;
-    this.toast = el('div', 'toast hidden');
+      <div class="boss-bar hidden" data-bosswrap role="group" aria-label="Boss health">
+        <span class="boss-name">Doubtwarden</span>
+        <div class="bar" role="progressbar" aria-label="Doubtwarden health" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"><div class="fill" data-bossfill></div></div>
+      </div>`;
+    this.toast = el('div', 'toast hidden', '');
+    this.toast.setAttribute('role', 'status');
+    this.toast.setAttribute('aria-live', 'polite');
     this.interactHint = el('div', 'interact-hint hidden', `press <b>E</b> · tap ✦`);
     // ── Dialogue ──
     this.dlg = el('div', 'dialogue hidden');
-    this.dlg.innerHTML = `<div class="dlg-box"><div class="dlg-who" data-who></div><p data-text></p><div class="dlg-controls"><button data-next>Next ▸</button><button data-skip class="ghost">Skip</button></div></div>`;
+    this.dlg.innerHTML = `<div class="dlg-box" role="group" aria-label="Story dialogue"><div class="dialogue-ornament" aria-hidden="true">✦</div><div class="dlg-who" data-who></div><p data-text aria-live="polite"></p><div class="dlg-controls"><button data-next class="primary">Next <span aria-hidden="true">›</span></button><button data-skip class="ghost">Skip story</button></div></div>`;
     // ── Pause ──
     this.pause = el('div', 'screen hidden');
-    this.pause.append(el('div', 'panel', `<h2>Paused</h2><div class="col"><button data-resume>Resume</button><button data-settings>Settings</button><button data-restart>Restart level</button><button data-quit>Quit to menu</button></div>`));
+    this.pause.append(el('div', 'panel screen-panel pause-panel', `<p class="eyebrow">TAKE YOUR TIME</p><h2>Little pause</h2><p class="screen-intro">The story will be right here when you're ready.</p><div class="col"><button data-resume class="primary">Continue playing</button><button data-settings>Settings</button><button data-restart>Restart chapter</button><button data-quit>Return to menu</button></div>`));
     // ── Level complete ──
     this.complete = el('div', 'screen hidden');
     // ── Game over flash ──
     this.gameover = el('div', 'screen hidden dark');
     // ── Ending ──
     this.ending = el('div', 'screen hidden');
-    this.ending.append(el('div', 'panel ending-panel', `<div class="big-heart">♥</div><h2>Together in Our Little World</h2><p class="ending-msg"></p><div class="row"><button data-credits>Credits</button><button data-menu>Main menu</button></div>`));
+    this.ending.append(el('div', 'panel ending-panel', `<p class="eyebrow">AND SO, THE STORY CONTINUES</p><div class="big-heart" aria-hidden="true">♥</div><h2>Together in Our Little World</h2><p class="ending-msg"></p><div class="row"><button data-credits>Credits</button><button data-menu class="primary">Return to our world</button></div>`));
     // ── Orientation hint ──
-    this.rotate = el('div', 'rotate-hint hidden', `<div>⟳<br>This story reads best sideways —<br>rotate your phone to landscape.</div>`);
+    this.rotate = el('div', 'rotate-hint hidden', `<div role="status"><span class="rotate-icon" aria-hidden="true">↻</span><p class="eyebrow">A LITTLE TIP</p><p>This story feels best in landscape.</p><p class="dim">Turn your phone sideways to continue.</p></div>`);
 
     for (const s of [this.loading, this.menu, this.levels, this.settings, this.credits, this.hud, this.toast, this.interactHint, this.dlg, this.pause, this.complete, this.gameover, this.ending, this.rotate]) this.app.append(s);
 
@@ -107,15 +113,19 @@ export class UIManager {
   showMenu() {
     this.hideAll();
     this.menuPanel.innerHTML = '';
-    this.menuPanel.append(el('p', 'tagline', '✦ a tiny adventure ✦'));
-    this.menuPanel.append(el('h1', '', 'Wake Him<br>With Love'));
-    this.menuPanel.append(el('p', 'dim', 'A small journey across gardens, seas and shadows — for one heart worth waking.'));
+    this.menuPanel.append(el('div', 'menu-emblem', '<span aria-hidden="true">♥</span>'));
+    this.menuPanel.append(el('p', 'tagline', '✦ A LITTLE ADVENTURE, MADE WITH LOVE ✦'));
+    this.menuPanel.append(el('h1', 'menu-title', 'Wake Him<br><span>With Love</span>'));
+    this.menuPanel.append(el('p', 'menu-description', 'Across dreamy gardens, moonlit seas, and every little memory in between.'));
+    this.menuPanel.append(el('p', 'menu-whisper', 'One heart at a time.'))
     const col = el('div', 'col');
-    if (this.save.hasProgress) col.append(button('Continue', () => this.h.onContinue(), 'primary'));
-    col.append(button('New Game', () => this.h.onNewGame(), this.save.hasProgress ? '' : 'primary'));
-    if (this.save.data.unlocked.length > 1) col.append(button('Chapters', () => this.showLevels()));
-    col.append(button('Settings', () => this.showSettings('menu')));
-    col.append(button('Credits', () => { this.hideAll(); this.credits.classList.remove('hidden'); }));
+    if (this.save.hasProgress) col.append(button('<span class="button-icon" aria-hidden="true">♡</span> Continue journey', () => this.h.onContinue(), 'primary menu-primary'));
+    col.append(button('<span class="button-icon" aria-hidden="true">✦</span> Begin our story', () => this.h.onNewGame(), this.save.hasProgress ? 'menu-secondary' : 'primary menu-primary'));
+    if (this.save.data.unlocked.length > 1) col.append(button('Story chapters', () => this.showLevels(), 'menu-secondary'));
+    const utility = el('div', 'menu-utility');
+    utility.append(button('Settings', () => this.showSettings('menu'), 'text-button'));
+    utility.append(button('Credits', () => { this.hideAll(); this.credits.classList.remove('hidden'); }, 'text-button'));
+    col.append(utility);
     this.menuPanel.append(col);
     this.menu.classList.remove('hidden');
   }
@@ -127,13 +137,17 @@ export class UIManager {
     for (const id of this.save.data.unlocked) {
       const name = this.h.levelName?.(id) || id;
       const done = this.save.data.completed.includes(id);
-      list.append(button(`${done ? '✓ ' : ''}${name}`, () => this.h.onPlayLevel(id), 'level-btn'));
+      const chapterButton = button(`<span class="chapter-status" aria-hidden="true">${done ? '♥' : '✦'}</span><span class="chapter-name">${name}</span><span class="chapter-state">${done ? 'Completed' : 'Ready to explore'} <span aria-hidden="true">›</span></span>`, () => this.h.onPlayLevel(id), `level-btn${done ? ' is-complete' : ''}`);
+      chapterButton.setAttribute('aria-label', `${name}, ${done ? 'completed' : 'unlocked'}`);
+      list.append(chapterButton);
     }
     this.levels.classList.remove('hidden');
   }
 
   showSettings(from) {
     this._settingsFrom = from;
+    this.menu.classList.add('hidden');
+    this.pause.classList.add('hidden');
     this.settings.classList.remove('hidden');
   }
   _backFromSettings() {
@@ -143,14 +157,24 @@ export class UIManager {
   }
 
   _confirmReset() {
-    if (this._confirming) return;
-    this._confirming = true;
     const btn = this.settings.querySelector('[data-reset]');
+    if (this._confirming) {
+      this._confirming = false;
+      clearTimeout(this._confirmTimer);
+      btn.textContent = 'Reset progress';
+      btn.classList.remove('armed');
+      this.h.onResetProgress();
+      return;
+    }
+    this._confirming = true;
     btn.textContent = 'Tap again to erase everything';
     btn.classList.add('armed');
-    setTimeout(() => { btn.textContent = 'Reset progress'; btn.classList.remove('armed'); this._confirming = false; }, 3500);
-    this._confirmTimer = setTimeout(() => {}, 0);
-    btn.addEventListener('click', () => this.h.onResetProgress(), { once: true });
+    clearTimeout(this._confirmTimer);
+    this._confirmTimer = setTimeout(() => {
+      btn.textContent = 'Reset progress';
+      btn.classList.remove('armed');
+      this._confirming = false;
+    }, 3500);
   }
 
   showGame() { this.hideAll(); this.hud.classList.remove('hidden'); }
@@ -161,7 +185,11 @@ export class UIManager {
   // ── HUD ──
   setHearts(n) { this.hud.querySelector('[data-hearts]').textContent = `♥ ${n}`; }
   setFragments(n, total) { this.hud.querySelector('[data-frags]').textContent = `◆ ${n}${total ? '/' + total : ''}`; }
-  setHp(hp, max) { this.hud.querySelector('[data-hp]').textContent = '♥'.repeat(Math.max(0, hp)) + '♡'.repeat(Math.max(0, max - hp)); }
+  setHp(hp, max) {
+    const el = this.hud.querySelector('[data-hp]');
+    el.textContent = '♥'.repeat(Math.max(0, hp)) + '♡'.repeat(Math.max(0, max - hp));
+    el.setAttribute('aria-label', `Health: ${hp} of ${max}`);
+  }
   showToast(text, ms = 2600) {
     this.toast.textContent = text;
     this.toast.classList.remove('hidden');
@@ -173,7 +201,9 @@ export class UIManager {
     const w = this.hud.querySelector('[data-bosswrap]');
     if (frac == null) { w.classList.add('hidden'); return; }
     w.classList.remove('hidden');
-    this.hud.querySelector('[data-bossfill]').style.width = `${Math.max(0, frac * 100)}%`;
+    const value = Math.round(Math.max(0, Math.min(1, frac)) * 100);
+    this.hud.querySelector('[data-bossfill]').style.width = `${value}%`;
+    this.hud.querySelector('.boss-bar .bar').setAttribute('aria-valuenow', String(value));
   }
 
   // ── dialogue ──
@@ -192,18 +222,22 @@ export class UIManager {
     this.hideAll();
     this.complete.innerHTML = '';
     const p = el('div', 'panel');
+    p.append(el('div', 'complete-heart', '<span aria-hidden="true">♥</span>'));
+    p.append(el('p', 'eyebrow', 'ANOTHER LITTLE MILESTONE'));
     p.append(el('h2', '', 'Chapter complete'));
-    p.append(el('p', 'dim', name));
-    p.append(el('p', '', `♥ ${hearts} hearts · ◆ ${fragments} memories${stars ? ` · ★ ${stars} keepsakes` : ''}`));
+    p.append(el('p', 'screen-intro', name));
+    p.append(el('div', 'completion-stats', `<span>♥ ${hearts} hearts</span><span>◆ ${fragments} memories</span>${stars ? `<span>★ ${stars} keepsakes</span>` : ''}`));
     const row = el('div', 'row');
-    row.append(button('Continue ▸', onNext, 'primary'));
+    row.append(button('Continue the story <span aria-hidden="true">›</span>', onNext, 'primary'));
     p.append(row);
     this.complete.append(p);
     this.complete.classList.remove('hidden');
   }
 
   flashGameOver(text = 'A shadow caught you…') {
-    this.gameover.innerHTML = `<div class="panel dark-panel"><h2>${text}</h2><p class="dim">returning to the last lantern…</p></div>`;
+    this.gameover.innerHTML = `<div class="panel dark-panel"><div class="big-heart" aria-hidden="true">♡</div><h2>${text}</h2><p class="dim">Finding your way back to the last lantern…</p></div>`;
+    this.gameover.setAttribute('role', 'status');
+    this.gameover.setAttribute('aria-live', 'polite');
     this.gameover.classList.remove('hidden');
     setTimeout(() => this.gameover.classList.add('hidden'), 1400);
   }
