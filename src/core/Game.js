@@ -363,7 +363,12 @@ export class Game {
       if (c.collected || !aabbOverlap(pa.minX, pa.bottomY, p.width, p.height, c.aabb)) continue;
       c.collect();
       this.save.collect(L.id, c.id, c.type === 'heart');
-      if (c.type === 'heart') { this.runHearts++; this.audio.play('collect'); this.bursts.burst(c.mesh.position.x, c.mesh.position.y, { color: '#ff8fb8' }); }
+      if (c.type === 'heart') {
+        this.runHearts++;
+        this.audio.play('collect');
+        this.bursts.burst(c.mesh.position.x, c.mesh.position.y, { color: '#ff8fb8' });
+        if (p.hp < p.maxHp) { p.heal(1); this.ui.setHp(p.hp, p.maxHp); }
+      }
       else if (c.type === 'fragment') { this.audio.play('fragment'); this.bursts.burst(c.mesh.position.x, c.mesh.position.y, { color: '#8fd8ff' }); this._collectFragment(c); }
       else { this.audio.play('star'); this.bursts.burst(c.mesh.position.x, c.mesh.position.y, { color: '#ffe27a' }); this.ui.showToast('A hidden keepsake ★'); }
       this._updateHudCounts();
