@@ -106,6 +106,7 @@ export class Game {
       onResetProgress: () => { this.save.resetProgress(); this.audio.play('ui'); this.toMenu(); },
       onDialogueNext: () => { this.audio.play('ui'); this.dialogue.next(); },
       onDialogueSkip: () => { this.audio.play('ui'); this.dialogue.skip(); },
+      onUiSfx: (name) => this.audio.play(name),
       levelName: (id) => LEVELS[id]?.name || id,
     };
   }

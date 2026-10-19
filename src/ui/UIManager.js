@@ -91,6 +91,17 @@ export class UIManager {
 
     for (const s of [this.loading, this.menu, this.levels, this.settings, this.credits, this.hud, this.toast, this.interactHint, this.dlg, this.pause, this.complete, this.gameover, this.ending, this.rotate]) this.app.append(s);
 
+    // UI sound delegation: hover (mouse only), press, confirm on primary buttons
+    this.app.addEventListener('pointerover', (e) => {
+      if (e.pointerType === 'mouse' && e.target.closest('button')) this.h.onUiSfx?.('uiHover');
+    });
+    this.app.addEventListener('pointerdown', (e) => {
+      if (e.target.closest('button')) this.h.onUiSfx?.('uiPress');
+    });
+    this.app.addEventListener('click', (e) => {
+      if (e.target.closest('button.primary')) this.h.onUiSfx?.('uiConfirm');
+    });
+
     // wire buttons
     this.levels.querySelector('[data-back]').addEventListener('click', () => this.showMenu());
     this.settings.querySelector('[data-back]').addEventListener('click', () => this._backFromSettings());
