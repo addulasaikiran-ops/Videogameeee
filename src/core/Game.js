@@ -263,6 +263,7 @@ export class Game {
     setTimeout(() => {
       this.player.setSpawn(spawn[0], spawn[1]);
       this.player.respawn(true);
+      this.ui.setHp(this.player.hp, this.player.maxHp);
       this.audio.play('respawn');
     }, 900);
   }
