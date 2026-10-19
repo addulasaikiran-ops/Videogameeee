@@ -10,6 +10,7 @@ function el(tag, cls, html) {
 }
 function button(label, onClick, cls = '') {
   const b = el('button', cls, label);
+  b.type = 'button';
   b.addEventListener('click', (e) => { e.preventDefault(); onClick(); });
   return b;
 }
@@ -197,7 +198,9 @@ export class UIManager {
     const w = this.hud.querySelector('[data-bosswrap]');
     if (frac == null) { w.classList.add('hidden'); return; }
     w.classList.remove('hidden');
-    this.hud.querySelector('[data-bossfill]').style.width = `${Math.max(0, frac * 100)}%`;
+    const value = Math.round(Math.max(0, Math.min(1, frac)) * 100);
+    this.hud.querySelector('[data-bossfill]').style.width = `${value}%`;
+    this.hud.querySelector('.boss-bar .bar').setAttribute('aria-valuenow', String(value));
   }
 
   // ── dialogue ──
