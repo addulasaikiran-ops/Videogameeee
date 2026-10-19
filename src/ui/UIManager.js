@@ -28,49 +28,64 @@ export class UIManager {
     // ── Main menu ──
     this.menu = el('div', 'screen hidden');
     this.menuPanel = el('div', 'panel menu-panel');
+    this.menuPanel.setAttribute('role', 'dialog');
+    this.menuPanel.setAttribute('aria-label', 'Main menu');
     this.menu.append(this.menuPanel);
     // ── Level select ──
     this.levels = el('div', 'screen hidden');
     this.levels.append(el('div', 'panel', `<h2>Chapters</h2><div class="level-list" data-level-list></div><div class="row"><button data-back>Back</button></div>`));
+    this.levels.firstElementChild.setAttribute('role', 'dialog');
+    this.levels.firstElementChild.setAttribute('aria-label', 'Chapter select');
     // ── Settings ──
     this.settings = el('div', 'screen hidden');
     this.settings.append(el('div', 'panel', `
       <h2>Settings</h2>
-      <label class="slider">Music <input data-music type="range" min="0" max="1" step="0.05"></label>
-      <label class="slider">Sound <input data-sfx type="range" min="0" max="1" step="0.05"></label>
+      <label class="slider">Music <input data-music type="range" min="0" max="1" step="0.05" aria-label="Music volume"></label>
+      <label class="slider">Sound <input data-sfx type="range" min="0" max="1" step="0.05" aria-label="Sound effects volume"></label>
       <label class="check"><input data-mute type="checkbox"> Mute all</label>
       <label class="slider">Quality
-        <select data-quality><option value="auto">Auto</option><option value="high">High</option><option value="low">Low</option></select>
+        <select data-quality aria-label="Graphics quality"><option value="auto">Auto</option><option value="high">High</option><option value="low">Low</option></select>
       </label>
       <div class="row"><button data-reset class="danger">Reset progress</button></div>
       <div class="row"><button data-back>Back</button></div>`));
+    this.settings.firstElementChild.setAttribute('role', 'dialog');
+    this.settings.firstElementChild.setAttribute('aria-label', 'Settings');
     // ── Credits ──
     this.credits = el('div', 'screen hidden');
     this.credits.append(el('div', 'panel credits', `<h2>Credits</h2><p>${CREDITS.join('<br>')}</p><div class="row"><button data-back>Back</button></div>`));
+    this.credits.firstElementChild.setAttribute('role', 'dialog');
+    this.credits.firstElementChild.setAttribute('aria-label', 'Credits');
     // ── HUD ──
     this.hud = el('div', 'hud hidden');
     this.hud.innerHTML = `
-      <div class="hud-left">
-        <span class="chip" data-hearts>♥ 0</span>
-        <span class="chip frag" data-frags>◆ 0</span>
-        <span class="chip" data-hp></span>
+      <div class="hud-left" aria-live="polite">
+        <span class="chip" data-hearts aria-label="hearts collected">♥ 0</span>
+        <span class="chip frag" data-frags aria-label="memory fragments">◆ 0</span>
+        <span class="chip" data-hp aria-label="health"></span>
       </div>
-      <div class="boss-bar hidden" data-bosswrap><span class="boss-name">Doubtwarden</span><div class="bar"><div class="fill" data-bossfill></div></div></div>`;
+      <div class="boss-bar hidden" data-bosswrap role="progressbar" aria-label="Boss health" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"><span class="boss-name">Doubtwarden</span><div class="bar"><div class="fill" data-bossfill></div></div></div>`;
     this.toast = el('div', 'toast hidden');
+    this.toast.setAttribute('role', 'status');
+    this.toast.setAttribute('aria-live', 'polite');
     this.interactHint = el('div', 'interact-hint hidden', `press <b>E</b> · tap ✦`);
     // ── Dialogue ──
     this.dlg = el('div', 'dialogue hidden');
-    this.dlg.innerHTML = `<div class="dlg-box"><div class="dlg-who" data-who></div><p data-text></p><div class="dlg-controls"><button data-next>Next ▸</button><button data-skip class="ghost">Skip</button></div></div>`;
+    this.dlg.innerHTML = `<div class="dlg-box" role="dialog" aria-live="polite"><div class="dlg-who" data-who></div><p data-text></p><div class="dlg-controls"><button data-next>Next ▸</button><button data-skip class="ghost">Skip</button></div></div>`;
     // ── Pause ──
     this.pause = el('div', 'screen hidden');
     this.pause.append(el('div', 'panel', `<h2>Paused</h2><div class="col"><button data-resume>Resume</button><button data-settings>Settings</button><button data-restart>Restart level</button><button data-quit>Quit to menu</button></div>`));
+    this.pause.firstElementChild.setAttribute('role', 'dialog');
+    this.pause.firstElementChild.setAttribute('aria-label', 'Paused');
     // ── Level complete ──
     this.complete = el('div', 'screen hidden');
     // ── Game over flash ──
     this.gameover = el('div', 'screen hidden dark');
+    this.gameover.setAttribute('role', 'alert');
     // ── Ending ──
     this.ending = el('div', 'screen hidden');
-    this.ending.append(el('div', 'panel ending-panel', `<div class="big-heart">♥</div><h2>Together in Our Little World</h2><p class="ending-msg"></p><div class="row"><button data-credits>Credits</button><button data-menu>Main menu</button></div>`));
+    this.ending.append(el('div', 'panel ending-panel', `<div class="big-heart" aria-hidden="true">♥</div><h2>Together in Our Little World</h2><p class="ending-msg"></p><div class="row"><button data-credits>Credits</button><button data-menu>Main menu</button></div>`));
+    this.ending.firstElementChild.setAttribute('role', 'dialog');
+    this.ending.firstElementChild.setAttribute('aria-label', 'Ending');
     // ── Orientation hint ──
     this.rotate = el('div', 'rotate-hint hidden', `<div>⟳<br>This story reads best sideways —<br>rotate your phone to landscape.</div>`);
 
@@ -124,11 +139,13 @@ export class UIManager {
     this.hideAll();
     const list = this.levels.querySelector('[data-level-list]');
     list.innerHTML = '';
-    for (const id of this.save.data.unlocked) {
+    this.save.data.unlocked.forEach((id, i) => {
       const name = this.h.levelName?.(id) || id;
       const done = this.save.data.completed.includes(id);
-      list.append(button(`${done ? '✓ ' : ''}${name}`, () => this.h.onPlayLevel(id), 'level-btn'));
-    }
+      const b = button(`<span class="lvl-num" aria-hidden="true">${i + 1}</span><span>${name}</span>${done ? '<span class="lvl-done" aria-label="completed">✓</span>' : ''}`, () => this.h.onPlayLevel(id), 'level-btn');
+      if (done) b.setAttribute('aria-label', `${name} — completed`);
+      list.append(b);
+    });
     this.levels.classList.remove('hidden');
   }
 
@@ -174,6 +191,7 @@ export class UIManager {
     if (frac == null) { w.classList.add('hidden'); return; }
     w.classList.remove('hidden');
     this.hud.querySelector('[data-bossfill]').style.width = `${Math.max(0, frac * 100)}%`;
+    w.setAttribute('aria-valuenow', String(Math.round(Math.max(0, frac * 100))));
   }
 
   // ── dialogue ──
