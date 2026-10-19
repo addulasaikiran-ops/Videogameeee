@@ -1,14 +1,14 @@
 {
   "id": "/Videogameeee/",
-  "name": "Our Little World",
-  "short_name": "Our World",
-  "description": "A tiny adventure, made with love.",
+  "name": "WakeHimWithLove",
+  "short_name": "WakeWithLove",
+  "description": "A small journey across gardens, seas and shadows — for one heart worth waking.",
   "start_url": "/Videogameeee/",
   "scope": "/Videogameeee/",
   "display": "standalone",
-  "orientation": "any",
-  "background_color": "#f6c7a5",
-  "theme_color": "#f6c7a5",
+  "orientation": "landscape",
+  "background_color": "#241a3d",
+  "theme_color": "#241a3d",
   "icons": [
     {
       "src": "/Videogameeee/icons/icon-192.png",
