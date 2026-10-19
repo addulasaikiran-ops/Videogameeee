@@ -51,12 +51,15 @@ export class UIManager {
     // ── HUD ──
     this.hud = el('div', 'hud hidden');
     this.hud.innerHTML = `
-      <div class="hud-left">
-        <span class="chip" data-hearts>♥ 0</span>
-        <span class="chip frag" data-frags>◆ 0</span>
-        <span class="chip" data-hp></span>
+      <div class="hud-left" aria-label="Game status">
+        <span class="chip collectible-chip" data-hearts aria-label="Collected hearts">♥ 0</span>
+        <span class="chip frag" data-frags aria-label="Memory fragments">◆ 0</span>
+        <span class="chip hp-chip" data-hp aria-label="Health"></span>
       </div>
-      <div class="boss-bar hidden" data-bosswrap><span class="boss-name">Doubtwarden</span><div class="bar"><div class="fill" data-bossfill></div></div></div>`;
+      <div class="boss-bar hidden" data-bosswrap role="group" aria-label="Boss health">
+        <span class="boss-name">Doubtwarden</span>
+        <div class="bar" role="progressbar" aria-label="Doubtwarden health" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"><div class="fill" data-bossfill></div></div>
+      </div>`;
     this.toast = el('div', 'toast hidden', '');
     this.toast.setAttribute('role', 'status');
     this.toast.setAttribute('aria-live', 'polite');
