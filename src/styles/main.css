@@ -3,22 +3,24 @@
    Design tokens first — every value below derives from :root. */
 :root {
   /* ── palette ── */
-  --c-ink-900: #141026;   /* deepest night */
-  --c-ink-800: #1c1735;
-  --c-ink-700: #272050;
-  --c-ivory: #f9eedd;     /* moonlit text */
-  --c-mist: #bfb0dd;      /* dim text */
-  --c-rose: #f2a8c4;
-  --c-rose-deep: #d4669a;
-  --c-rose-glow: #ffb9d6;
-  --c-gold: #e9c98d;
-  --c-gold-hi: #f7e3b8;
-  --c-lav: #9a86e0;
-  --c-lav-soft: #c9b9f2;
-  --c-danger: #e8799b;
+  --c-ink-900: #160f26;   /* deepest night, warmed toward plum */
+  --c-ink-800: #1f1739;
+  --c-ink-700: #2c2354;
+  --c-ivory: #faefdd;     /* moonlit text */
+  --c-mist: #c9bdf0;      /* dim text — brighter for contrast */
+  --c-rose: #f4aecd;
+  --c-rose-deep: #d86fa3;
+  --c-rose-glow: #ffc2de;
+  --c-gold: #eece95;
+  --c-gold-hi: #fbe7bd;
+  --c-lav: #a491ea;
+  --c-lav-soft: #d0c2f8;
+  --c-teal: #8fe3d6;      /* wisp-light counterpoint */
+  --c-danger: #ed85a8;
   /* ── typography ── */
   --f-display: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
-  --f-body: 'Nunito', ui-rounded, 'SF Pro Rounded', system-ui, sans-serif;
+  --f-caps: 'Marcellus', 'Cormorant Garamond', Georgia, serif;   /* roman caps — labels, buttons, chapter names */
+  --f-body: 'Jost', ui-rounded, 'SF Pro Rounded', system-ui, sans-serif;
   /* ── elevation / glow ── */
   --e-panel: 0 0 0 1px rgba(242, 168, 196, .28), 0 18px 60px rgba(8, 5, 24, .60), 0 0 80px rgba(154, 134, 224, .15);
   --e-panel-in: inset 0 1px 0 rgba(255, 244, 220, .10), inset 0 0 42px rgba(154, 134, 224, .09);
@@ -84,7 +86,7 @@ body { background: radial-gradient(120% 90% at 50% 10%, var(--c-ink-700), var(--
   text-shadow: 0 0 20px rgba(233, 201, 141, .25);
 }
 .panel p { line-height: 1.65 }
-.tagline { letter-spacing: .38em; font-size: .7rem; font-weight: 800; color: var(--c-lav-soft); margin: 0; text-transform: uppercase; text-shadow: 0 0 12px rgba(154, 134, 224, .5) }
+.tagline { font-family: var(--f-caps); letter-spacing: .42em; font-size: .68rem; color: var(--c-teal); margin: 0; text-transform: uppercase; text-shadow: 0 0 14px rgba(143, 227, 214, .45) }
 .dim { color: var(--c-mist); font-size: .95rem }
 .menu-panel .col { margin-top: var(--sp-3) }
 
@@ -95,7 +97,7 @@ button {
   padding: .8rem 1.4rem; min-height: 44px; min-width: 44px;
   background: linear-gradient(165deg, rgba(154, 134, 224, .18), rgba(39, 32, 80, .55));
   backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-  color: var(--c-ivory); font-weight: 700; letter-spacing: .03em;
+  color: var(--c-ivory); font-family: var(--f-caps); font-weight: 400; letter-spacing: .09em;
   box-shadow: var(--e-btn), var(--e-btn-glow);
   cursor: pointer;
   transition: transform var(--t-fast) var(--ez-out), box-shadow var(--t-med) var(--ez-out), border-color var(--t-med), background var(--t-med);
@@ -111,13 +113,13 @@ button:hover::after { transform: translateX(60%) }
 button:active { transform: translateY(2px) scale(.985); filter: brightness(.92) }
 button:focus-visible { outline: 2px solid var(--c-gold); outline-offset: 3px; box-shadow: var(--e-btn), var(--e-glow-gold) }
 button.primary {
-  background: linear-gradient(165deg, var(--c-rose) 0%, var(--c-rose-deep) 90%);
+  background: linear-gradient(165deg, var(--c-rose) 0%, var(--c-rose-deep) 75%, #b85489 100%);
   border-color: rgba(255, 185, 214, .8); color: #fff;
   box-shadow: var(--e-btn), 0 0 30px rgba(242, 168, 196, .45), inset 0 1px 0 rgba(255, 255, 255, .35);
 }
 button.danger { border-color: rgba(232, 121, 155, .5); color: var(--c-danger) }
 button.danger.armed { background: linear-gradient(165deg, var(--c-danger), var(--c-rose-deep)); color: #fff }
-button.ghost { background: transparent; border-color: transparent; box-shadow: none; color: var(--c-mist); font-weight: 700 }
+button.ghost { background: transparent; border-color: transparent; box-shadow: none; color: var(--c-mist); font-family: var(--f-body); font-weight: 500; letter-spacing: .05em }
 button.ghost:hover { border-color: rgba(242, 168, 196, .3); color: var(--c-ivory) }
 button.level-btn {
   display: flex; align-items: center; gap: .9rem; width: 100%; margin: var(--sp-1) 0;
@@ -151,10 +153,10 @@ button.level-btn {
   box-shadow: 0 4px 14px rgba(8, 5, 24, .45), inset 0 1px 0 rgba(255, 244, 220, .12);
   backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
 }
-.chip.frag { color: var(--c-lav-soft) }
+.chip.frag { color: var(--c-teal) }
 .chip[data-hp] { color: var(--c-rose-glow); letter-spacing: .12em; text-shadow: 0 0 10px rgba(242, 168, 196, .5) }
 .boss-bar { position: absolute; top: calc(.6rem + env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); width: min(56vw, 380px); text-align: center }
-.boss-name { font-family: var(--f-display); font-style: italic; font-size: 1.05rem; font-weight: 600; color: var(--c-lav-soft); text-shadow: 0 1px 10px rgba(0,0,0,.7), 0 0 16px rgba(154, 134, 224, .4); letter-spacing: .18em }
+.boss-name { font-family: var(--f-caps); font-size: .95rem; color: var(--c-rose-glow); text-shadow: 0 1px 10px rgba(0,0,0,.7), 0 0 18px rgba(216, 111, 163, .5); letter-spacing: .3em; text-transform: uppercase }
 .boss-bar .bar { margin-top: .3rem; height: 11px; border-radius: var(--r-pill); background: rgba(8, 5, 24, .6); overflow: hidden; border: 1px solid rgba(201, 185, 242, .3); box-shadow: inset 0 2px 4px rgba(0,0,0,.5) }
 .boss-bar .fill { height: 100%; width: 100%; background: linear-gradient(90deg, var(--c-lav), var(--c-rose-deep) 70%, var(--c-rose-glow)); box-shadow: 0 0 14px rgba(242, 168, 196, .5); transition: width var(--t-med) var(--ez-out) }
 
@@ -172,7 +174,7 @@ button.level-btn {
   backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
   padding: .45rem 1.05rem; border-radius: var(--r-pill); font-size: .85rem; font-weight: 700; pointer-events: none;
   animation: hintbob 1.8s ease-in-out infinite }
-.interact-hint b { font-family: var(--f-display); font-style: italic; color: var(--c-rose-glow) }
+.interact-hint b { font-family: var(--f-caps); color: var(--c-teal); letter-spacing: .1em }
 @keyframes hintbob { 0%,100% { transform: translate(-50%, 0) } 50% { transform: translate(-50%, -4px) } }
 
 /* ── dialogue — an illuminated manuscript page ── */
@@ -260,7 +262,8 @@ button.level-btn {
 .chapter-card { display: flex; align-items: center; gap: .9rem; text-align: left; padding: .7rem 1.1rem; border-radius: var(--r-m) }
 .chapter-card.locked { opacity: .42; cursor: not-allowed }
 .chapter-card.done .lvl-meta { color: var(--c-lav-soft) }
-.chapter-card .lvl-name { flex: 1 }
+.chapter-card .lvl-name { flex: 1; font-family: var(--f-caps); letter-spacing: .05em; font-size: 1.02rem }
+.lvl-meta { color: var(--c-mist); font-size: .8rem }
 .lvl-meta { font-size: .8rem; color: var(--c-mist) }
 
 .stat-row { display: flex; gap: var(--sp-2); justify-content: center; flex-wrap: wrap; margin: var(--sp-2) 0 }

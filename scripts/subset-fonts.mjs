@@ -14,7 +14,7 @@ mkdirSync(outDir, { recursive: true });
 
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36';
 const QUERY =
-  'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Nunito:wght@400;600;700;800&display=swap';
+  'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Jost:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Marcellus&display=swap';
 
 // Glyphs worth keeping: latin, punctuation, digits, arrows/glyphs used in UI text.
 const SUBSET = '--unicodes=U+0000-00FF,U+2000-206F,U+2190-21FF,U+25A0-25FF,U+2660-27BF,U+FE00-FE0F';
