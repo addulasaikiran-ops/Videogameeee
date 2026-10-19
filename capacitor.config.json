@@ -1,0 +1,13 @@
+{
+  "appId": "com.wakehimwithlove.game",
+  "appName": "Wake Him With Love",
+  "webDir": "dist",
+  "android": {
+    "allowMixedContent": false
+  },
+  "plugins": {
+    "CapacitorHttp": {
+      "enabled": false
+    }
+  }
+}
