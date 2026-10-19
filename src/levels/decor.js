@@ -121,6 +121,75 @@ function gate(x, y) {
   return g;
 }
 
+// ── atmosphere helpers (shared scenery, decal-only) ─────────────────────────
+function hills(group, area, { color = '#1d1638', y = 0, z = -24, h = 7, step = 26 } = {}) {
+  // distant rolling-hill silhouette — one lumpy mesh strip
+  const geo = new THREE.PlaneGeometry(step, h, 8, 3);
+  const pos = geo.attributes.position;
+  for (let i = 0; i < pos.count; i++) {
+    const px = pos.getX(i) / step + 0.5;           // 0..1 across
+    if (pos.getY(i) > 0) pos.setY(i, pos.getY(i) + Math.sin(px * Math.PI * 2 + z) * h * 0.35);
+  }
+  const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color, fog: false }));
+  for (let i = 0; i < Math.ceil(area / step); i++) {
+    const inst = m.clone();
+    inst.position.set(-area / 2 + step / 2 + i * step, y + h / 2, z);
+    group.add(inst);
+  }
+}
+
+function treeline(group, area, { color = '#241a45', z = -20, step = 8 } = {}) {
+  // far treeline of soft dark cones — reads as a distant forest edge
+  for (let i = 0; i < Math.ceil(area / step); i++) {
+    const h = 3.5 + Math.sin(i * 2.7) * 1.5 + (i % 3) * 0.8;
+    const c = new THREE.Mesh(new THREE.ConeGeometry(1.4 + h * 0.18, h, 7), new THREE.MeshBasicMaterial({ color, fog: false }));
+    c.position.set(-area / 2 + i * step + Math.sin(i * 1.3) * 1.2, h / 2 - 0.4, z);
+    group.add(c);
+  }
+}
+
+function mistBand(group, area, { color = '#d9b6e8', y = 0.6, z = -8, h = 1.1, op = 0.14 } = {}) {
+  // low drifting fog sheet hugging the ground
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(area * 1.3, h),
+    new THREE.MeshBasicMaterial({ color, transparent: true, opacity: op, depthWrite: false, fog: false }));
+  m.position.set(0, y, z);
+  group.add(m);
+  return m;
+}
+
+function lightShafts(group, x0, count, { color = '#ffe9c9', z = -18 } = {}) {
+  // soft diagonal moonlight shafts
+  for (let i = 0; i < count; i++) {
+    const s = new THREE.Mesh(new THREE.PlaneGeometry(2.6 + i * 0.9, 30),
+      new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.06 - i * 0.012, depthWrite: false, fog: false }));
+    s.position.set(x0 + i * 3.4, 8, z - i * 0.5);
+    s.rotation.z = 0.38;
+    group.add(s);
+  }
+}
+
+function shootingStar(group, x, y, z = -26) {
+  // a faint diagonal streak in the sky
+  const s = new THREE.Mesh(new THREE.PlaneGeometry(3.2, 0.06),
+    new THREE.MeshBasicMaterial({ color: '#fff3cf', transparent: true, opacity: 0.55, depthWrite: false, fog: false }));
+  s.position.set(x, y, z);
+  s.rotation.z = -0.5;
+  group.add(s);
+}
+
+function fireflies(group, area, { color = '#ffe9a8', count = 26, z = -2.5 } = {}) {
+  const geo = new THREE.BufferGeometry();
+  const pos = new Float32Array(count * 3);
+  for (let i = 0; i < count; i++) {
+    pos[i * 3] = (Math.random() - 0.5) * area;
+    pos[i * 3 + 1] = 0.4 + Math.random() * 2.8;
+    pos[i * 3 + 2] = z + (Math.random() - 0.5) * 2;
+  }
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  const pts = new THREE.Points(geo, new THREE.PointsMaterial({ color, size: 0.09, transparent: true, opacity: 0.85, depthWrite: false }));
+  group.add(pts);
+}
+
 // ── theme builders ───────────────────────────────────────────────────────────
 // Each returns { objects:[...disposeable meshes/groups], particles }
 export function buildDecor(scene, theme, length) {
@@ -129,12 +198,22 @@ export function buildDecor(scene, theme, length) {
   const area = Math.max(50, length + 30);
 
   if (theme === 'dawnGarden') {
-    // luminous first-light: deep indigo zenith bleeding into a rose-gold horizon
+    // luminous first-light: indigo zenith over a rose horizon, moonlit hills,
+    // far treeline, low mist, light shafts, stars + fireflies
     group.add(skyPlane('#241c4a', '#b5678a'));
-    stars(group, 60);
-    moon(group, -length / 2 + 8, 14, 2.4, '#ffdf9e');
+    stars(group, 140);
+    shootingStar(group, length * 0.18, 22);
+    shootingStar(group, -length * 0.32, 27);
+    moon(group, -length / 2 + 8, 14, 2.6, '#ffdf9e');
+    lightShafts(group, -length / 2 + 10, 3);
+    hills(group, area, { color: '#2a2050', z: -26, h: 8 });
+    hills(group, area, { color: '#32285e', z: -23, h: 6, step: 19 });
+    treeline(group, area, { z: -19 });
+    mistBand(group, area, { y: 0.9, z: -10, op: 0.16 });
+    mistBand(group, area, { color: '#f4c9dd', y: 0.4, z: -5, h: 0.8, op: 0.10 });
     for (let i = 0; i < Math.ceil(area / 14); i++) group.add(tree(-area / 2 + 6 + i * 14 + Math.sin(i) * 3, 0, { s: 0.9 + (i % 3) * 0.25, trunk: '#5b4258', crown: '#e890b4' }));
     flowers(group, area, 0, ['#ff9ec4', '#ffe9c9', '#8fe3d6']);
+    fireflies(group, area, { z: -2.5 });
     group.add(bridge(length * 0.45, 0.7, 5));
     particles = new AmbientParticles(scene, { count: 110, area, color: '#ffc7dd', size: 0.13, yBase: 0, yRange: 9, drift: 0.7, opacity: 0.8 });
   } else if (theme === 'memoryGarden') {
