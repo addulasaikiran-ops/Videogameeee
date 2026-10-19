@@ -26,7 +26,7 @@ export class UIManager {
     // ── Loading ──
     this.loading = el('div', 'screen', `<div class="heart-pulse"></div><p class="dim">loading a little world…</p>`);
     // ── Main menu ──
-    this.menu = el('div', 'screen hidden');
+    this.menu = el('div', 'screen hidden menu-screen');
     this.menuPanel = el('div', 'panel menu-panel');
     this.menu.append(this.menuPanel);
     // ── Level select ──
@@ -161,7 +161,11 @@ export class UIManager {
   // ── HUD ──
   setHearts(n) { this.hud.querySelector('[data-hearts]').textContent = `♥ ${n}`; }
   setFragments(n, total) { this.hud.querySelector('[data-frags]').textContent = `◆ ${n}${total ? '/' + total : ''}`; }
-  setHp(hp, max) { this.hud.querySelector('[data-hp]').textContent = '♥'.repeat(Math.max(0, hp)) + '♡'.repeat(Math.max(0, max - hp)); }
+  setHp(hp, max) {
+    const el = this.hud.querySelector('[data-hp]');
+    el.textContent = '♥'.repeat(Math.max(0, hp)) + '♡'.repeat(Math.max(0, max - hp));
+    el.setAttribute('aria-label', `Health: ${hp} of ${max}`);
+  }
   showToast(text, ms = 2600) {
     this.toast.textContent = text;
     this.toast.classList.remove('hidden');
