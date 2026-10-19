@@ -88,7 +88,7 @@ export class Game {
     this.renderer.setPixelRatio(low ? 1 : Math.min(devicePixelRatio || 1, 2));
     this.renderer.shadowMap.enabled = !low;
     this.sun.castShadow = !low;
-    if (this.level?.decor?.particles) this.level.decor.particles.pts.visible = !lowest;
+    if (this.level?.decor?.particles?.points) this.level.decor.particles.points.visible = !lowest;
   }
 
   // auto-quality: sustained fps below 42 downgrades one tier per check
