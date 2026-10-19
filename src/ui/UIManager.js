@@ -48,7 +48,7 @@ export class UIManager {
     uiSet({ screen: from === 'pause' ? 'game' : 'menu', pause: from === 'pause' });
   }
   showCredits() { uiSet({ screen: 'credits' }); }
-  showGame() { uiSet({ screen: 'game', pause: false, dlg: null }); }
+  showGame() { uiSet({ screen: 'game', pause: false, dlg: null, veil: uiGet().veil + 1 }); }
   showPause() { uiSet({ pause: true }); }
   hidePause() { uiSet({ pause: false, screen: uiGet().screen === 'settings' ? 'game' : uiGet().screen }); }
 

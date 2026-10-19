@@ -14,12 +14,18 @@ export function Hud({ hud, boss }) {
   const [pop, setPop] = useState(null);
   const [gain, setGain] = useState(0); // rekeys the floating "+1" on each pickup
   const prev = useRef(hud);
+  const prevBoss = useRef(boss); // damage-trail: bar drains from the last shown value
   useEffect(() => {
     if (hud.hearts > prev.current.hearts) { setPop('hearts'); setGain(hud.hearts); }
     if (hud.frags > prev.current.frags) { setPop('frags'); }
     prev.current = hud;
     if (pop) { const t = setTimeout(() => setPop(null), 500); return () => clearTimeout(t); }
   }, [hud]);
+  useEffect(() => {
+    // trail lags behind ~600ms then catches up
+    const t = setTimeout(() => { prevBoss.current = boss; }, 600);
+    return () => clearTimeout(t);
+  }, [boss]);
   return (
     <div className="hud" aria-live="polite">
       <div className="hud-left">
@@ -36,6 +42,7 @@ export function Hud({ hud, boss }) {
         <div className="boss-bar" role="progressbar" aria-label="Boss health" aria-valuemin="0" aria-valuemax="100" aria-valuenow={Math.round(boss * 100)}>
           <span className="boss-name">Doubtwarden</span>
           <div className="bar">
+            <div className="trail" style={{ width: `${(prevBoss.current ?? boss) * 100}%` }} />
             <div className="fill" style={{ width: `${boss * 100}%` }} />
             {/* phase boundaries: P1→P2 at 2/3, P2→P3 at 1/3 (from the right) */}
             {[2 / 3, 1 / 3].map((f) => <span key={f} className="phase-tick" style={{ left: `${f * 100}%` }} />)}

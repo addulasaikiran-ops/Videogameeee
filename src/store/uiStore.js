@@ -7,6 +7,7 @@ const listeners = new Set();
 let state = {
   screen: 'loading',        // loading | menu | levels | settings | credits | game | complete | ending
   savedFlash: 0,
+  veil: 0,                  // incremented on each level start — plays the transition wipe
   settingsFrom: 'menu',
   pause: false,
   gameoverFlash: null,      // { text, id }

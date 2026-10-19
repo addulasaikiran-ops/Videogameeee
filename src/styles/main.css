@@ -53,6 +53,32 @@ body { background: radial-gradient(120% 90% at 50% 10%, var(--c-ink-700), var(--
 .screen { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; padding: var(--sp-3); z-index: 20; pointer-events: none;
   background: radial-gradient(120% 90% at 50% 30%, rgba(20, 16, 38, .18), rgba(16, 12, 38, .42)); }
 .screen > * { pointer-events: auto }
+/* ambient luminous backdrop — slow-drifting watercolor blobs of rose,
+   lavender and wisp-teal floating over the 3D scene behind the panels */
+.screen::before {
+  content: ''; position: absolute; inset: -20%; pointer-events: none; z-index: -1;
+  background:
+    radial-gradient(38% 30% at 22% 26%, rgba(244, 174, 205, .16), transparent 70%),
+    radial-gradient(34% 28% at 78% 72%, rgba(164, 145, 234, .18), transparent 70%),
+    radial-gradient(26% 22% at 66% 18%, rgba(143, 227, 214, .10), transparent 70%),
+    radial-gradient(30% 26% at 30% 80%, rgba(238, 206, 149, .09), transparent 70%);
+  animation: ambientdrift 36s ease-in-out infinite alternate;
+}
+.screen::after {
+  content: ''; position: absolute; inset: -20%; pointer-events: none; z-index: -1;
+  background:
+    radial-gradient(1.5px 1.5px at 12% 30%, rgba(250, 239, 221, .5), transparent 60%),
+    radial-gradient(1.5px 1.5px at 32% 68%, rgba(255, 194, 222, .55), transparent 60%),
+    radial-gradient(1.2px 1.2px at 55% 22%, rgba(208, 194, 248, .5), transparent 60%),
+    radial-gradient(1.4px 1.4px at 74% 46%, rgba(250, 239, 221, .45), transparent 60%),
+    radial-gradient(1.3px 1.3px at 88% 74%, rgba(255, 194, 222, .5), transparent 60%),
+    radial-gradient(1.2px 1.2px at 44% 86%, rgba(143, 227, 214, .4), transparent 60%);
+  animation: ambientdrift 52s ease-in-out infinite alternate-reverse;
+}
+@keyframes ambientdrift {
+  from { transform: translate3d(-2.5%, -1.5%, 0) scale(1) }
+  to { transform: translate3d(2.5%, 1.5%, 0) scale(1.06) }
+}
 .screen.dark { background: rgba(12, 8, 28, .86) }
 
 /* night-glass panel — ink layers, rose hairline, faint paper grain */
@@ -159,7 +185,8 @@ button.level-btn {
 .boss-name { font-family: var(--f-caps); font-size: .95rem; color: var(--c-rose-glow); text-shadow: 0 1px 10px rgba(0,0,0,.7), 0 0 18px rgba(216, 111, 163, .5); letter-spacing: .3em; text-transform: uppercase }
 .boss-bar .bar { position: relative; margin-top: .3rem; height: 11px; border-radius: var(--r-pill); background: rgba(8, 5, 24, .6); overflow: hidden; border: 1px solid rgba(201, 185, 242, .3); box-shadow: inset 0 2px 4px rgba(0,0,0,.5) }
 .boss-bar .phase-tick { position: absolute; top: 0; bottom: 0; width: 1px; background: rgba(250, 239, 221, .6) }
-.boss-bar .fill { height: 100%; width: 100%; background: linear-gradient(90deg, var(--c-lav), var(--c-rose-deep) 70%, var(--c-rose-glow)); box-shadow: 0 0 14px rgba(242, 168, 196, .5); transition: width var(--t-med) var(--ez-out) }
+.boss-bar .trail { position: absolute; top: 0; bottom: 0; left: 0; background: rgba(250, 239, 221, .55); transition: width .6s var(--ez-out) }
+.boss-bar .fill { position: relative; height: 100%; width: 100%; background: linear-gradient(90deg, var(--c-lav), var(--c-rose-deep) 70%, var(--c-rose-glow)); box-shadow: 0 0 14px rgba(242, 168, 196, .5); transition: width var(--t-med) var(--ez-out) }
 
 .toast { position: fixed; top: 14%; left: 50%; transform: translateX(-50%); z-index: 12;
   background: linear-gradient(165deg, rgba(39, 32, 80, .85), rgba(20, 16, 38, .9));
@@ -177,6 +204,20 @@ button.level-btn {
   animation: hintbob 1.8s ease-in-out infinite }
 .interact-hint b { font-family: var(--f-caps); color: var(--c-teal); letter-spacing: .1em }
 @keyframes hintbob { 0%,100% { transform: translate(-50%, 0) } 50% { transform: translate(-50%, -4px) } }
+
+/* cinematic dim behind the dialogue box — letterbox feel, no full bars so the
+   world stays readable above the typewriter card */
+.dlg-backdrop { position: fixed; inset: 0; z-index: 14; pointer-events: none;
+  background: linear-gradient(to bottom, rgba(16, 12, 38, .5), transparent 18%, transparent 55%, rgba(16, 12, 38, .35) 82%);
+  animation: backdropin var(--t-med) var(--ez-out) }
+@keyframes backdropin { from { opacity: 0 } to { opacity: 1 } }
+
+/* level-transition wipe — a soft ink veil that flashes over the screen when
+   a chapter (re)starts; content swaps while opacity is high */
+.veil { position: fixed; inset: 0; z-index: 30; pointer-events: none;
+  background: radial-gradient(120% 120% at 50% 50%, var(--c-ink-800), var(--c-ink-900));
+  animation: veilflash .9s var(--ez-out) forwards }
+@keyframes veilflash { 0% { opacity: 0 } 25% { opacity: .85 } 100% { opacity: 0 } }
 
 /* ── dialogue — an illuminated manuscript page ── */
 .dialogue { position: fixed; left: 0; right: 0; bottom: 0; z-index: 15; display: flex; justify-content: center; padding: var(--sp-2); padding-bottom: calc(var(--sp-2) + env(safe-area-inset-bottom)); pointer-events: none }

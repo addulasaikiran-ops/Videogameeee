@@ -119,7 +119,9 @@ export function App() {
       {s.pause && s.screen !== 'settings' && <PauseMenu />}
       <Toast toast={s.toast} />
       {s.inGame && s.screen === 'game' && !s.dlg && <InteractHint visible={s.interact} />}
+      {s.dlg && <div className="dlg-backdrop" aria-hidden="true" />}
       {s.dlg && <DialogueBox dlg={s.dlg} />}
+      {s.veil > 0 && <div key={s.veil} className="veil" aria-hidden="true" />}
       {s.gameoverFlash && <GameOverFlash text={s.gameoverFlash.text} />}
       {s.vignette > 0 && <div key={s.vignette} className="vignette" aria-hidden="true" />}
       {s.inGame && s.portraitSmall && <RotateHint />}
