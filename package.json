@@ -7,12 +7,19 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "lint": "eslint src scripts --quiet",
+    "format": "prettier --write \"src/**/*.{js,jsx,css,json}\"",
     "generate-icons": "node scripts/generate-icons.js"
   },
   "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "three": "^0.180.0"
   },
   "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "eslint": "^10.13.0",
+    "prettier": "^3.9.10",
     "sharp": "^0.34.3",
     "vite": "^7.1.7"
   }
