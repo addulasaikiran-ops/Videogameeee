@@ -6,6 +6,7 @@ import { useSyncExternalStore } from 'react';
 const listeners = new Set();
 let state = {
   screen: 'loading',        // loading | menu | levels | settings | credits | game | complete | ending
+  savedFlash: 0,
   settingsFrom: 'menu',
   pause: false,
   gameoverFlash: null,      // { text, id }

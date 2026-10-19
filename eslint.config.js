@@ -12,7 +12,7 @@ export default [
         localStorage: 'readonly', location: 'readonly', AudioContext: 'readonly',
         webkitAudioContext: 'readonly', Audio: 'readonly', console: 'readonly',
         setTimeout: 'readonly', clearTimeout: 'readonly', setInterval: 'readonly',
-        clearInterval: 'readonly', requestAnimationFrame: 'readonly', URL: 'readonly',
+        clearInterval: 'readonly', requestAnimationFrame: 'readonly', cancelAnimationFrame: 'readonly', URL: 'readonly',
         fetch: 'readonly', process: 'readonly', __dirname: 'readonly',
       },
     },

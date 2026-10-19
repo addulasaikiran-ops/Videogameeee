@@ -20,6 +20,13 @@ export class UIManager {
     window.addEventListener('offline', () => uiSet({ offline: true }));
     window.addEventListener('online', () => uiSet({ offline: false }));
     this.updateOrientationHint();
+    // autosave indicator — every save() flash a tiny "saved" pill
+    let savedTimer = 0;
+    save.onWrite = () => {
+      uiSet({ savedFlash: (uiGet().savedFlash || 0) + 1 });
+      clearTimeout(savedTimer);
+      savedTimer = setTimeout(() => uiSet({ savedFlash: 0 }), 1600);
+    };
   }
 
   // ── screens ──

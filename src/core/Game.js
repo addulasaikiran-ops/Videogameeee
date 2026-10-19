@@ -12,6 +12,7 @@ import { DialogueManager } from '../story/DialogueManager.js';
 import { CutsceneManager } from '../story/CutsceneManager.js';
 import { BurstEmitter } from '../gameplay/Particles.js';
 import { UIManager } from '../ui/UIManager.js';
+import { submitScore, cloudSavePush } from '../utils/api.js';
 import { TouchControls } from '../ui/TouchControls.js';
 import { Goal } from '../gameplay/Goal.js';
 
@@ -81,10 +82,24 @@ export class Game {
 
   _applyQuality() {
     const q = this.save.data.settings.quality;
-    const low = q === 'low' || (q === 'auto' && InputManager.isTouchDevice);
+    const autoLow = q === 'auto' && (InputManager.isTouchDevice || (this._autoTier || 0) > 0);
+    const low = q === 'low' || autoLow;
+    const lowest = q === 'low' || (q === 'auto' && (this._autoTier || 0) >= 2);
     this.renderer.setPixelRatio(low ? 1 : Math.min(devicePixelRatio || 1, 2));
     this.renderer.shadowMap.enabled = !low;
     this.sun.castShadow = !low;
+    if (this.level?.decor?.particles) this.level.decor.particles.pts.visible = !lowest;
+  }
+
+  // auto-quality: sustained fps below 42 downgrades one tier per check
+  // (dpr+shadows first, ambient particles next). Downscale only — no flap.
+  _trackFps(dt) {
+    if (this.save.data.settings.quality !== 'auto') return;
+    this._fpsAcc = (this._fpsAcc || 0) + dt; this._fpsN = (this._fpsN || 0) + 1;
+    if (this._fpsAcc < 3) return;
+    const avgFps = this._fpsN / this._fpsAcc;
+    this._fpsAcc = 0; this._fpsN = 0;
+    if (avgFps < 42 && (this._autoTier || 0) < 2) { this._autoTier = (this._autoTier || 0) + 1; this._applyQuality(); }
   }
 
   _onResize() {
@@ -152,8 +167,10 @@ export class Game {
     this.level = level;
     this.state = State.PLAYING;
     this.runHearts = 0;
+    this._levelT0 = performance.now();
     this.levelFragTotal = (level.data.collectibles || []).filter((c) => c.type === 'fragment').length;
     this.cam.bounds = level.bounds;
+    this._applyQuality();
     this.input.releaseAll();
     this.input.clearPresses();
     this.player.hp = this.player.maxHp;
@@ -179,6 +196,11 @@ export class Game {
     this._updateHudCounts();
     this.ui.setHp(this.player.hp, this.player.maxHp);
     this.ui.showToast(level.data.name, 2600);
+    if (!this.save.flag('hint:controls')) {
+      this.save.setFlag('hint:controls');
+      const touch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      this.ui.showToast(touch ? 'Drag the petals to move — tap the heart to jump' : 'Move with ← → · jump with space · interact with E', 5200);
+    }
     this.audio.unlock();
     this.audio.setMood(id);
 
@@ -234,6 +256,9 @@ export class Game {
       fragments: (this.save.data.collectibles[id] || []).filter((c) => c.includes('-m')).length,
       stars: (this.save.data.collectibles[id] || []).filter((c) => c.includes('-s')).length,
     };
+    // optional server: fire-and-forget score submission + cloud save sync
+    submitScore(id, 'friend', (performance.now() - (this._levelT0 || 0)) / 1000, this.runHearts);
+    cloudSavePush(this.save.data.playerId || 'friend', this.save.data);
     if (!next) { this._showEnding(); return; }
     this.state = State.COMPLETE;
     const playEnd = this.level.data.endScene;
@@ -322,6 +347,7 @@ export class Game {
       this.level?.decor.particles?.update(dt, t, this.player.position.x);
     }
 
+    this._trackFps(dt);
     this.bursts.update(dt);
     this.cam.update(dt, this.state === State.CUTSCENE ? null : this.player);
     if (this.state === State.CUTSCENE && this.cam.override) {

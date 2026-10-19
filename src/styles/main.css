@@ -291,6 +291,10 @@ button.level-btn {
   font-size: .75rem; font-weight: 700; padding: .35rem .9rem; border-radius: var(--r-pill) }
 .big-heart.broken { color: var(--c-lav-soft); font-size: 3rem }
 
+.saved-pill { position: fixed; top: calc(.7rem + env(safe-area-inset-top, 0px)); left: 50%; transform: translateX(-50%);
+  z-index: 12; font-size: .72rem; font-weight: 800; letter-spacing: .12em; color: var(--c-gold-hi);
+  background: rgba(20, 16, 38, .85); border: 1px solid rgba(233, 201, 141, .35); border-radius: var(--r-pill);
+  padding: .3rem .8rem; pointer-events: none; animation: vign 1.6s var(--ez-out) forwards }
 .vignette { position: fixed; inset: 0; pointer-events: none; z-index: 9;
   background: radial-gradient(120% 100% at 50% 50%, transparent 52%, rgba(190, 35, 70, .5));
   animation: vign .7s var(--ez-out) forwards }

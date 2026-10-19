@@ -9,9 +9,14 @@
     "preview": "vite preview",
     "lint": "eslint src scripts --quiet",
     "format": "prettier --write \"src/**/*.{js,jsx,css,json}\"",
-    "generate-icons": "node scripts/generate-icons.js"
+    "assets": "node scripts/optimize-assets.mjs",
+    "fonts": "node scripts/subset-fonts.mjs",
+    "verify": "node scripts/verify-build.mjs",
+    "server": "node server/index.js",
+    "generate-icons": "node scripts/optimize-assets.mjs"
   },
   "dependencies": {
+    "express": "^4.22.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "three": "^0.180.0"

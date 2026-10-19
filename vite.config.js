@@ -4,5 +4,15 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   base: '/Videogameeee/',
   plugins: [react()],
-  build: { manifest: 'asset-manifest.json' },
+  build: {
+    manifest: 'asset-manifest.json',
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          three: ['three'],
+          react: ['react', 'react-dom'],
+        },
+      },
+    },
+  },
 });
