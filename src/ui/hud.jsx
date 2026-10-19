@@ -12,9 +12,10 @@ const Heart = ({ full }) => (
 
 export function Hud({ hud, boss }) {
   const [pop, setPop] = useState(null);
+  const [gain, setGain] = useState(0); // rekeys the floating "+1" on each pickup
   const prev = useRef(hud);
   useEffect(() => {
-    if (hud.hearts > prev.current.hearts) { setPop('hearts'); }
+    if (hud.hearts > prev.current.hearts) { setPop('hearts'); setGain(hud.hearts); }
     if (hud.frags > prev.current.frags) { setPop('frags'); }
     prev.current = hud;
     if (pop) { const t = setTimeout(() => setPop(null), 500); return () => clearTimeout(t); }
@@ -22,7 +23,10 @@ export function Hud({ hud, boss }) {
   return (
     <div className="hud" aria-live="polite">
       <div className="hud-left">
-        <span className={`chip ${pop === 'hearts' ? 'pop' : ''}`} aria-label="hearts collected">♥ {hud.hearts}</span>
+        <span className={`chip hearts-chip ${pop === 'hearts' ? 'pop' : ''}`} aria-label="hearts collected">
+          ♥ {hud.hearts}
+          {gain === hud.hearts && hud.hearts > 0 && <span key={gain} className="plus-one" aria-hidden="true">+1</span>}
+        </span>
         <span className={`chip frag ${pop === 'frags' ? 'pop' : ''}`} aria-label="memory fragments">◆ {hud.frags}{hud.fragsTotal ? `/${hud.fragsTotal}` : ''}</span>
         <span className="chip hp-chip" aria-label={`health ${hud.hp} of ${hud.maxHp}`}>
           {Array.from({ length: hud.maxHp }, (_, i) => <Heart key={i} full={i < hud.hp} />)}
@@ -31,7 +35,11 @@ export function Hud({ hud, boss }) {
       {boss != null && (
         <div className="boss-bar" role="progressbar" aria-label="Boss health" aria-valuemin="0" aria-valuemax="100" aria-valuenow={Math.round(boss * 100)}>
           <span className="boss-name">Doubtwarden</span>
-          <div className="bar"><div className="fill" style={{ width: `${boss * 100}%` }} /></div>
+          <div className="bar">
+            <div className="fill" style={{ width: `${boss * 100}%` }} />
+            {/* phase boundaries: P1→P2 at 2/3, P2→P3 at 1/3 (from the right) */}
+            {[2 / 3, 1 / 3].map((f) => <span key={f} className="phase-tick" style={{ left: `${f * 100}%` }} />)}
+          </div>
         </div>
       )}
     </div>

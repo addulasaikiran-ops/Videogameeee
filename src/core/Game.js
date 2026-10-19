@@ -301,7 +301,11 @@ export class Game {
 
   _onPlayerEvent(name) {
     this.audio.play(name);
-    if (name === 'land' && !this._reducedMotion()) this.cam.dip(0.4);
+    if (name === 'land' && !this._reducedMotion()) {
+      this.cam.dip(0.4);
+      // landing dust puff
+      this.bursts.burst(this.player.position.x, this.player.position.y + 0.05, { color: '#e8dff5', count: 5, speed: 1.0, size: 0.09, life: 0.4 });
+    }
     if ((name === 'hurt' || name === 'land') && navigator.vibrate) navigator.vibrate(name === 'hurt' ? 40 : 8);
     if (name === 'hurt') {
       this.ui.setHp(this.player.hp, this.player.maxHp);
