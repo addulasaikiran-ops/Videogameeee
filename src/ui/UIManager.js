@@ -134,6 +134,8 @@ export class UIManager {
 
   showSettings(from) {
     this._settingsFrom = from;
+    this.menu.classList.add('hidden');
+    this.pause.classList.add('hidden');
     this.settings.classList.remove('hidden');
   }
   _backFromSettings() {
@@ -143,14 +145,24 @@ export class UIManager {
   }
 
   _confirmReset() {
-    if (this._confirming) return;
-    this._confirming = true;
     const btn = this.settings.querySelector('[data-reset]');
+    if (this._confirming) {
+      this._confirming = false;
+      clearTimeout(this._confirmTimer);
+      btn.textContent = 'Reset progress';
+      btn.classList.remove('armed');
+      this.h.onResetProgress();
+      return;
+    }
+    this._confirming = true;
     btn.textContent = 'Tap again to erase everything';
     btn.classList.add('armed');
-    setTimeout(() => { btn.textContent = 'Reset progress'; btn.classList.remove('armed'); this._confirming = false; }, 3500);
-    this._confirmTimer = setTimeout(() => {}, 0);
-    btn.addEventListener('click', () => this.h.onResetProgress(), { once: true });
+    clearTimeout(this._confirmTimer);
+    this._confirmTimer = setTimeout(() => {
+      btn.textContent = 'Reset progress';
+      btn.classList.remove('armed');
+      this._confirming = false;
+    }, 3500);
   }
 
   showGame() { this.hideAll(); this.hud.classList.remove('hidden'); }
