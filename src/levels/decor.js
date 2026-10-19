@@ -129,12 +129,14 @@ export function buildDecor(scene, theme, length) {
   const area = Math.max(50, length + 30);
 
   if (theme === 'dawnGarden') {
-    group.add(skyPlane('#ffd9a8', '#ffeef0'));
-    moon(group, -length / 2 + 8, 18, 2.0, '#ffe9c9');
-    for (let i = 0; i < Math.ceil(area / 14); i++) group.add(tree(-area / 2 + 6 + i * 14 + Math.sin(i) * 3, 0, { s: 0.9 + (i % 3) * 0.25 }));
-    flowers(group, area, 0);
+    // luminous first-light: deep indigo zenith bleeding into a rose-gold horizon
+    group.add(skyPlane('#241c4a', '#b5678a'));
+    stars(group, 60);
+    moon(group, -length / 2 + 8, 14, 2.4, '#ffdf9e');
+    for (let i = 0; i < Math.ceil(area / 14); i++) group.add(tree(-area / 2 + 6 + i * 14 + Math.sin(i) * 3, 0, { s: 0.9 + (i % 3) * 0.25, trunk: '#5b4258', crown: '#e890b4' }));
+    flowers(group, area, 0, ['#ff9ec4', '#ffe9c9', '#8fe3d6']);
     group.add(bridge(length * 0.45, 0.7, 5));
-    particles = new AmbientParticles(scene, { count: 110, area, color: '#ffc7dd', size: 0.13, yBase: 0, yRange: 9, drift: 0.7, opacity: 0.75 });
+    particles = new AmbientParticles(scene, { count: 110, area, color: '#ffc7dd', size: 0.13, yBase: 0, yRange: 9, drift: 0.7, opacity: 0.8 });
   } else if (theme === 'memoryGarden') {
     group.add(skyPlane('#3a2d5c', '#8f6d9e'));
     moon(group, -length / 2 + 10, 17, 2.8, '#e8dcff');

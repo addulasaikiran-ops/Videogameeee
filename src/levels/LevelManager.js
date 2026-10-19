@@ -85,14 +85,14 @@ export class LevelManager {
 
   _groundColor(theme) {
     return {
-      dawnGarden: '#8fae8a', memoryGarden: '#6d5b8f', memoryVoid: '#5b4b78',
+      dawnGarden: '#5d6d5e', memoryGarden: '#6d5b8f', memoryVoid: '#5b4b78',
       nightSea: '#d9c29a', shadowRealm: '#3d3153', bossArena: '#4d3a5e', endingGlade: '#9db98a',
     }[theme] || '#8fae8a';
   }
 
   _platformColor(theme) {
     return {
-      dawnGarden: '#b8cfa0', memoryGarden: '#8d78bd', memoryVoid: '#7d6b9f',
+      dawnGarden: '#a8b892', memoryGarden: '#8d78bd', memoryVoid: '#7d6b9f',
       nightSea: '#e8d3a8', shadowRealm: '#54456e', bossArena: '#6e5686', endingGlade: '#b8cfa0',
     }[theme] || '#b8cfa0';
   }
