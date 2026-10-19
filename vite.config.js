@@ -1,6 +1,18 @@
 import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   base: '/Videogameeee/',
-  build: { manifest: 'asset-manifest.json' },
+  plugins: [react()],
+  build: {
+    manifest: 'asset-manifest.json',
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          three: ['three'],
+          react: ['react', 'react-dom'],
+        },
+      },
+    },
+  },
 });

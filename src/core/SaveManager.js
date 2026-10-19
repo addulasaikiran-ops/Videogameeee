@@ -47,6 +47,7 @@ export class SaveManager {
   save() {
     try {
       localStorage.setItem(SAVE_KEY, JSON.stringify({ ...this.data, savedAt: Date.now() }));
+      this.onWrite?.();
       return true;
     } catch (error) {
       console.warn('Could not save progress:', error);

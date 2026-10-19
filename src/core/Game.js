@@ -12,6 +12,7 @@ import { DialogueManager } from '../story/DialogueManager.js';
 import { CutsceneManager } from '../story/CutsceneManager.js';
 import { BurstEmitter } from '../gameplay/Particles.js';
 import { UIManager } from '../ui/UIManager.js';
+import { submitScore, cloudSavePush } from '../utils/api.js';
 import { TouchControls } from '../ui/TouchControls.js';
 import { Goal } from '../gameplay/Goal.js';
 
@@ -81,10 +82,24 @@ export class Game {
 
   _applyQuality() {
     const q = this.save.data.settings.quality;
-    const low = q === 'low' || (q === 'auto' && InputManager.isTouchDevice);
+    const autoLow = q === 'auto' && (InputManager.isTouchDevice || (this._autoTier || 0) > 0);
+    const low = q === 'low' || autoLow;
+    const lowest = q === 'low' || (q === 'auto' && (this._autoTier || 0) >= 2);
     this.renderer.setPixelRatio(low ? 1 : Math.min(devicePixelRatio || 1, 2));
     this.renderer.shadowMap.enabled = !low;
     this.sun.castShadow = !low;
+    if (this.level?.decor?.particles?.points) this.level.decor.particles.points.visible = !lowest;
+  }
+
+  // auto-quality: sustained fps below 42 downgrades one tier per check
+  // (dpr+shadows first, ambient particles next). Downscale only — no flap.
+  _trackFps(dt) {
+    if (this.save.data.settings.quality !== 'auto') return;
+    this._fpsAcc = (this._fpsAcc || 0) + dt; this._fpsN = (this._fpsN || 0) + 1;
+    if (this._fpsAcc < 3) return;
+    const avgFps = this._fpsN / this._fpsAcc;
+    this._fpsAcc = 0; this._fpsN = 0;
+    if (avgFps < 42 && (this._autoTier || 0) < 2) { this._autoTier = (this._autoTier || 0) + 1; this._applyQuality(); }
   }
 
   _onResize() {
@@ -106,6 +121,7 @@ export class Game {
       onResetProgress: () => { this.save.resetProgress(); this.audio.play('ui'); this.toMenu(); },
       onDialogueNext: () => { this.audio.play('ui'); this.dialogue.next(); },
       onDialogueSkip: () => { this.audio.play('ui'); this.dialogue.skip(); },
+      onUiSfx: (name) => this.audio.play(name),
       levelName: (id) => LEVELS[id]?.name || id,
     };
   }
@@ -151,8 +167,10 @@ export class Game {
     this.level = level;
     this.state = State.PLAYING;
     this.runHearts = 0;
+    this._levelT0 = performance.now();
     this.levelFragTotal = (level.data.collectibles || []).filter((c) => c.type === 'fragment').length;
     this.cam.bounds = level.bounds;
+    this._applyQuality();
     this.input.releaseAll();
     this.input.clearPresses();
     this.player.hp = this.player.maxHp;
@@ -178,7 +196,13 @@ export class Game {
     this._updateHudCounts();
     this.ui.setHp(this.player.hp, this.player.maxHp);
     this.ui.showToast(level.data.name, 2600);
+    if (!this.save.flag('hint:controls')) {
+      this.save.setFlag('hint:controls');
+      const touch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      this.ui.showToast(touch ? 'Drag the petals to move — tap the heart to jump' : 'Move with ← → · jump with space · interact with E', 5200);
+    }
     this.audio.unlock();
+    this.audio.setMood(id);
 
     if (level.data.introScene && !this.save.flag(`intro:${id}`)) {
       this.save.setFlag(`intro:${id}`);
@@ -232,6 +256,9 @@ export class Game {
       fragments: (this.save.data.collectibles[id] || []).filter((c) => c.includes('-m')).length,
       stars: (this.save.data.collectibles[id] || []).filter((c) => c.includes('-s')).length,
     };
+    // optional server: fire-and-forget score submission + cloud save sync
+    submitScore(id, 'friend', (performance.now() - (this._levelT0 || 0)) / 1000, this.runHearts);
+    cloudSavePush(this.save.data.playerId || 'friend', this.save.data);
     if (!next) { this._showEnding(); return; }
     this.state = State.COMPLETE;
     const playEnd = this.level.data.endScene;
@@ -268,13 +295,25 @@ export class Game {
     }, 900);
   }
 
+  _reducedMotion() {
+    return !!(this.save.data.settings.reducedMotion || window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
+  }
+
   _onPlayerEvent(name) {
     this.audio.play(name);
+    if (name === 'land' && !this._reducedMotion()) {
+      this.cam.dip(0.4);
+      // landing dust puff
+      this.bursts.burst(this.player.position.x, this.player.position.y + 0.05, { color: '#e8dff5', count: 5, speed: 1.0, size: 0.09, life: 0.4 });
+    }
+    if ((name === 'hurt' || name === 'land') && navigator.vibrate) navigator.vibrate(name === 'hurt' ? 40 : 8);
     if (name === 'hurt') {
       this.ui.setHp(this.player.hp, this.player.maxHp);
+      this.ui.hurtFlash();
+      if (!this._reducedMotion()) this.cam.shake(0.55);
       this.bursts.burst(this.player.position.x, this.player.position.y + 0.8, { color: '#ff6d6d', count: 8 });
     }
-    if (name === 'death') this._gameOver();
+    if (name === 'death') { this._gameOver(); if (!this._reducedMotion()) this.cam.shake(0.7); }
     if (name === 'attack') this.bursts.burst(this.player.position.x + this.player.facing, this.player.position.y + 0.7, { color: '#ff9ec4', count: 6, speed: 2.5, life: 0.4 });
     if (name === 'doubleJump') this.bursts.burst(this.player.position.x, this.player.position.y, { color: '#cfe9ff', count: 8, speed: 2, life: 0.4 });
     if (name === 'jump') this.bursts.burst(this.player.position.x, this.player.position.y, { color: '#fff0d6', count: 4, speed: 1.6, life: 0.3 });
@@ -312,6 +351,7 @@ export class Game {
       this.level?.decor.particles?.update(dt, t, this.player.position.x);
     }
 
+    this._trackFps(dt);
     this.bursts.update(dt);
     this.cam.update(dt, this.state === State.CUTSCENE ? null : this.player);
     if (this.state === State.CUTSCENE && this.cam.override) {
@@ -342,6 +382,11 @@ export class Game {
   }
 
   _updatePlaying(dt, t) {
+    // hit-stop: briefly slow gameplay on impactful kills (skip with reduced motion)
+    if (this.hitStop > 0) {
+      this.hitStop -= dt;
+      if (!this._reducedMotion()) dt = dt * 0.12;
+    }
     const L = this.level;
     const p = this.player;
     const effInput = {
@@ -363,7 +408,13 @@ export class Game {
       if (c.collected || !aabbOverlap(pa.minX, pa.bottomY, p.width, p.height, c.aabb)) continue;
       c.collect();
       this.save.collect(L.id, c.id, c.type === 'heart');
-      if (c.type === 'heart') { this.runHearts++; this.audio.play('collect'); this.bursts.burst(c.mesh.position.x, c.mesh.position.y, { color: '#ff8fb8' }); }
+      if (c.type === 'heart') {
+        this.runHearts++;
+        const now = performance.now();
+        this._streak = (this._streak && now - this._streak.t < 1600) ? { n: this._streak.n + 1, t: now } : { n: 0, t: now };
+        this.audio.play('collect', { step: this._streak.n });
+        this.bursts.burst(c.mesh.position.x, c.mesh.position.y, { color: '#ff8fb8' });
+      }
       else if (c.type === 'fragment') { this.audio.play('fragment'); this.bursts.burst(c.mesh.position.x, c.mesh.position.y, { color: '#8fd8ff' }); this._collectFragment(c); }
       else { this.audio.play('star'); this.bursts.burst(c.mesh.position.x, c.mesh.position.y, { color: '#ffe27a' }); this.ui.showToast('A hidden keepsake ★'); }
       this._updateHudCounts();
@@ -394,6 +445,7 @@ export class Game {
       if (attackBox && aabbOverlap(attackBox.minX, attackBox.bottomY, attackBox.maxX - attackBox.minX, attackBox.topY - attackBox.bottomY, e.aabb)) {
         const res = e.hit(1);
         this.audio.play(res === 'dead' ? 'enemyDie' : 'enemyHit');
+        if (res === 'dead') this.hitStop = 0.06;
         this.bursts.burst(e.x, e.y + 0.5, { color: '#c9b6ff', count: 10 });
         if (res === 'dead' && e.isSummon) L.boss?.wispDied();
         continue;
@@ -414,6 +466,8 @@ export class Game {
           if (aabbOverlap(aa.minX, aa.bottomY, aa.maxX - aa.minX, aa.topY - aa.bottomY, b.aabb)) {
             const res = b.hit(1);
             this.audio.play(res === 'dead' ? 'enemyDie' : 'bossHit');
+            this.hitStop = 0.09;
+            if (!this._reducedMotion()) this.cam.shake(0.35);
             this.bursts.burst(b.x, b.y + 1.2, { color: '#ff8fb8', count: 14, speed: 4 });
             if (res === 'dead') this._bossDefeated();
           }
